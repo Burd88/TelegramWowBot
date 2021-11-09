@@ -28,17 +28,17 @@ namespace TelegramBot
         //  private static string CNguildrankworld;
         // private static string CNguildrankregion;
         // private static string CNguildrankrealm;
-        //  private static string SODguildrankname;
-        // private static string SODguildrankworld;
-        //  private static string SODguildrankregion;
-        //  private static string SODguildrankrealm;
+        private static string SODguildrankname;
+        private static string SODguildrankworld;
+        private static string SODguildrankregion;
+        private static string SODguildrankrealm;
         public static string[] GetGuildInfo()
         {
 
             Guild_raid_progress();
             GetGuildOtherInfo();
             GetGuildRosterInfo();
-            string[] charfull = new string[11];
+            string[] charfull = new string[13];
             charfull[0] = guildName;
             charfull[1] = guildFaction;
             charfull[2] = guildLeader;
@@ -47,6 +47,8 @@ namespace TelegramBot
             charfull[5] = SODguildraidprogress;
             charfull[6] = guildTimeCreate;
             charfull[7] = error;
+            charfull[8] = SODguildrankname;
+            charfull[9] = SODguildrankrealm;
 
             return charfull;
         }
@@ -71,7 +73,7 @@ namespace TelegramBot
                             {
                                 if (character.rank == 0)
                                 {
-                                    guildLeader = "Лидер: " + character.character.name;
+                                    guildLeader = "<b>Лидер</b>: " + character.character.name;
                                 }
                             }
                         }
@@ -120,11 +122,11 @@ namespace TelegramBot
                         {
                             // Console.WriteLine(line);
                             GuildMain guildmain = JsonConvert.DeserializeObject<GuildMain>(line);
-                            guildTimeCreate = "Основана: " + Functions.FromUnixTimeStampToDateTime(guildmain.created_timestamp.ToString()).ToString();
-                            guildName = guildmain.name;
-                            guildAchiv = "Достижения: " + guildmain.achievement_points.ToString();
-                            memberCount = "Членов гильдии: " + guildmain.member_count.ToString();
-                            guildFaction = "Фракция: " + guildmain.faction.name;
+                            guildTimeCreate = "<b>Основана</b>: " + Functions.FromUnixTimeStampToDateTime(guildmain.created_timestamp.ToString()).ToString();
+                            guildName = "<b>" + guildmain.name + "</b>";
+                            guildAchiv = "<b>Достижения</b>: " + guildmain.achievement_points.ToString();
+                            memberCount = "<b>Членов гильдии</b>: " + guildmain.member_count.ToString();
+                            guildFaction = "<b>Фракция</b>: " + guildmain.faction.name;
 
                         }
 
@@ -216,53 +218,46 @@ namespace TelegramBot
                              {
                                  Console.WriteLine("EXSA" + ex.Message);
                              } */
-                        SODguildraidprogress = "Рейд прогресс: " + rio_guild.raid_progression.SanctumOfDomination.summary;
-                        /* if (rio_guild.raid_rankings.SanctumOfDomination.mythic.world == 0)
-                         {
-                             if (rio_guild.raid_rankings.SanctumOfDomination.heroic.world == 0)
-                             {
-                                 if (rio_guild.raid_rankings.SanctumOfDomination.normal.world == 0)
-                                 {
-                                     SODguildrankname = "Сложность: " + "Обычный";
-                                     SODguildrankworld = "Мир: " + "0";
-                                     SODguildrankregion = "Регион: " + "0";
-                                     SODguildrankrealm = "Сервер: " + "0";
+                        SODguildraidprogress = "<b>Рейд прогресс</b>: " + rio_guild.raid_progression.SanctumOfDomination.summary;
+                        if (rio_guild.raid_rankings.SanctumOfDomination.mythic.world == 0)
+                        {
+                            if (rio_guild.raid_rankings.SanctumOfDomination.heroic.world == 0)
+                            {
+                                if (rio_guild.raid_rankings.SanctumOfDomination.normal.world == 0)
+                                {
+                                    SODguildrankname = "<b>Сложность</b>: " + "Обычный";
+                                    SODguildrankworld = "Мир: " + "0";
+                                    SODguildrankregion = "Регион: " + "0";
+                                    SODguildrankrealm = "<b>Сервер</b>: " + "0";
 
-                                 }
-                                 else
-                                 {
-                                     SODguildrankname = "Сложность: " + "Обычный";
-                                     SODguildrankworld = "Мир: " + rio_guild.raid_rankings.SanctumOfDomination.normal.world.ToString();
-                                     SODguildrankregion = "Регион: " + rio_guild.raid_rankings.SanctumOfDomination.normal.region.ToString();
-                                     SODguildrankrealm = "Сервер: " + rio_guild.raid_rankings.SanctumOfDomination.normal.realm.ToString();
-                                 }
+                                }
+                                else
+                                {
+                                    SODguildrankname = "<b>Сложность</b>: " + "Обычный";
+                                    SODguildrankworld = "Мир: " + rio_guild.raid_rankings.SanctumOfDomination.normal.world.ToString();
+                                    SODguildrankregion = "Регион: " + rio_guild.raid_rankings.SanctumOfDomination.normal.region.ToString();
+                                    SODguildrankrealm = "<b>Сервер</b>: " + rio_guild.raid_rankings.SanctumOfDomination.normal.realm.ToString();
+                                }
 
 
-                             }
-                             else
-                             {
-                                 SODguildrankname = "Сложность: " + "Героический";
-                                 SODguildrankworld = "Мир: " + rio_guild.raid_rankings.SanctumOfDomination.heroic.world.ToString();
-                                 SODguildrankregion = "Регион: " + rio_guild.raid_rankings.SanctumOfDomination.heroic.region.ToString();
-                                 SODguildrankrealm = "Сервер: " + rio_guild.raid_rankings.SanctumOfDomination.heroic.realm.ToString();
-                             }
+                            }
+                            else
+                            {
+                                SODguildrankname = "<b>Сложность</b>: " + "Героический";
+                                SODguildrankworld = "Мир: " + rio_guild.raid_rankings.SanctumOfDomination.heroic.world.ToString();
+                                SODguildrankregion = "Регион: " + rio_guild.raid_rankings.SanctumOfDomination.heroic.region.ToString();
+                                SODguildrankrealm = "<b>Сервер</b>: " + rio_guild.raid_rankings.SanctumOfDomination.heroic.realm.ToString();
+                            }
 
-                         }
-                         else
-                         {
-                             SODguildrankname = "Сложность: " + "Мифический";
-                             SODguildrankworld = "Мир: " + rio_guild.raid_rankings.SanctumOfDomination.mythic.world.ToString();
-                             SODguildrankregion = "Регион: " + rio_guild.raid_rankings.SanctumOfDomination.mythic.region.ToString();
-                             SODguildrankrealm = "Сервер: " + rio_guild.raid_rankings.SanctumOfDomination.mythic.realm.ToString();
-                         }
-                         try
-                         {
-                             main_info_worker.ReportProgress(100);
-                         }
-                         catch (Exception ex)
-                         {
-                             Console.WriteLine("EXSA" + ex.Message);
-                         }*/
+                        }
+                        else
+                        {
+                            SODguildrankname = "<b>Сложность<b>: " + "Мифический";
+                            SODguildrankworld = "Мир: " + rio_guild.raid_rankings.SanctumOfDomination.mythic.world.ToString();
+                            SODguildrankregion = "Регион: " + rio_guild.raid_rankings.SanctumOfDomination.mythic.region.ToString();
+                            SODguildrankrealm = "<b>Сервер</b>: " + rio_guild.raid_rankings.SanctumOfDomination.mythic.realm.ToString();
+                        }
+
                     }
                 }
                 responcechar.Close();

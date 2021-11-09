@@ -3,29 +3,32 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 
 namespace TelegramBot
 {
     class GuildActivity
     {
-        private static AllActivitys activitys = new AllActivitys() { activity = new List<Activity>() };
+        public static AllActivitys activitys = new AllActivitys() { activity = new List<Activity>() };
         private static string error = "false";
-        public static void GetGuildActivity()
+        public static AllActivitys GetGuildActivity()
         {
 
             try
             {
-
+                activitys = new AllActivitys() { activity = new List<Activity>() };
                 WebRequest requesta = WebRequest.Create("https://eu.api.blizzard.com/data/wow/guild/howling-fjord/сердце-греха/activity?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
                 WebResponse responcea = requesta.GetResponse();
 
-                using (Stream stream2 = responcea.GetResponseStream())
+                using (Stream stream = responcea.GetResponseStream())
 
                 {
-                    using (StreamReader reader2 = new StreamReader(stream2))
+                    using (StreamReader reader = new StreamReader(stream))
                     {
                         string line = "";
-                        while ((line = reader2.ReadLine()) != null)
+                        while ((line = reader.ReadLine()) != null)
                         {
 
 
@@ -39,33 +42,34 @@ namespace TelegramBot
                                 for (int i = 0; i < activity.activities.Count; i++)
                                 {
                                     TimeSpan ts = DateTime.Now - Functions.FromUnixTimeStampToDateTime(activity.activities[i].timestamp);
-                                    if ((int)ts.TotalMinutes < 6)
+                                    if ((int)ts.TotalMinutes < 5)
                                     {
                                         if (activity.activities[i].activity.type == "CHARACTER_ACHIEVEMENT")
                                         {
-                                            activitys.activity.Add(new Activity() { Name = "Персонаж: " + activity.activities[i].character_achievement.character.name.ToString(), Mode = "Получил достижение: " + activity.activities[i].character_achievement.achievement.name.ToString(), Time = Functions.relative_time(Functions.FromUnixTimeStampToDateTime(activity.activities[i].timestamp)) });
+                                            activitys.activity.Add(new Activity() { Name = "<b>Персонаж</b>: " + activity.activities[i].character_achievement.character.name.ToString(), Mode = "<b>Получил достижение</b>: " + activity.activities[i].character_achievement.achievement.name.ToString(), Time = Functions.relative_time(Functions.FromUnixTimeStampToDateTime(activity.activities[i].timestamp)) });
 
 
                                         }
                                         else if (activity.activities[i].activity.type == "ENCOUNTER")
                                         {
 
-                                            activitys.activity.Add(new Activity() { Name = "Гильдия победила: " + activity.activities[i].encounter_completed.encounter.name.ToString(), Mode = "Режим: " + activity.activities[i].encounter_completed.mode.name.ToString(), Time = Functions.relative_time(Functions.FromUnixTimeStampToDateTime(activity.activities[i].timestamp)) });
+                                            activitys.activity.Add(new Activity() { Name = "<b>Гильдия победила</b>: " + activity.activities[i].encounter_completed.encounter.name.ToString(), Mode = "<b>Режим</b>: " + activity.activities[i].encounter_completed.mode.name.ToString(), Time = Functions.relative_time(Functions.FromUnixTimeStampToDateTime(activity.activities[i].timestamp)) });
 
                                         }
                                     }
 
 
                                 }
-                                WriteActivityInFile();
-                            }
 
+                            }
+                            WriteActivityInFile();
 
                         }
                     }
                 }
                 responcea.Close();
                 error = "false";
+                return activitys;
             }
             catch (WebException e)
             {
@@ -75,14 +79,16 @@ namespace TelegramBot
                     Console.WriteLine("Status Code : {0}", ((HttpWebResponse)e.Response).StatusCode);
                     Console.WriteLine("Status Description : {0}", ((HttpWebResponse)e.Response).StatusDescription);
                     Console.WriteLine("GetGuildActicity Error: " + e.Message);
+                    return activitys;
                 }
             }
             catch (Exception e)
             {
                 error = "true";
                 Console.WriteLine("GetGuildActicity Error: " + e.Message);
-            }
 
+            }
+            return activitys;
         }
 
         private static async void WriteActivityInFile()
@@ -107,8 +113,12 @@ namespace TelegramBot
                     //  if (result == null)
                     //  {
                     //     users.members.Add(new User() { Name = name, Id = id });
-
-                    await System.Text.Json.JsonSerializer.SerializeAsync(fs, activitys);
+                    var options = new JsonSerializerOptions
+                    {
+                        Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+                        WriteIndented = true
+                    };
+                    await System.Text.Json.JsonSerializer.SerializeAsync(fs, activitys, options);
 
 
 

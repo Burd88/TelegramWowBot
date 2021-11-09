@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TelegramBot
 {
@@ -22,6 +24,37 @@ namespace TelegramBot
         private static string error = "false";
         private static string realmstatus = "null";
         private static string realmname = "null";
+        public static string realmstatustype = "";
+
+        public static string GetRealmInfoForTimer()
+        {
+            RealmUpdateFunction();
+            Task<string> Tstr = ReadRealmStatusTypeText();
+            string str = Tstr.Result;
+            if (str == "Up")
+            {
+                WriteRealmStatusTypeInFile(realmstatustype);
+
+                return $"<b>Тех. Обслуживание закончилось!</b>\nИгровой мир: <b>{realmname}</b> работает!\u2705";
+
+            }
+            else if (str == "Down")
+            {
+                WriteRealmStatusTypeInFile(realmstatustype);
+                return $"<b>Тех. Обслуживание началось!</b>\nИгровой мир: <b>{realmname}</b> не работает!\u274c";
+
+            }
+            else if (str == "No work")
+            {
+                return null;
+            }
+            else if (str == "Work")
+            {
+                return null;
+            }
+
+            return null;
+        }
         static void RealmUpdateFunction()
         {
             try
@@ -43,11 +76,13 @@ namespace TelegramBot
                             RealmInfo realm = JsonConvert.DeserializeObject<RealmInfo>(line);
                             if (realm.status.type == "UP")
                             {
+                                realmstatustype = realm.status.type;
                                 realmstatus = "\u2705" + realm.status.name;
                             }
                             else
                             {
                                 realmstatus = "\u274c" + realm.status.name;
+                                realmstatustype = realm.status.type;
                             }
 
                             foreach (RealmInfoRealm realms in realm.realms)
@@ -80,6 +115,80 @@ namespace TelegramBot
             }
 
 
+        }
+
+        static async Task<string> ReadRealmStatusTypeText()
+        {
+            string writePathtext = @"F:\TelegramWowBot\RealmStatusType.txt";
+
+            try
+            {
+
+                using (StreamReader sr = new StreamReader(writePathtext))
+                {
+                    string statusbefore = await sr.ReadToEndAsync();
+                    // Console.WriteLine(statusbefore);
+                    //  Console.WriteLine(realmstatustype);
+                    Thread.Sleep(2000);
+                    if (statusbefore == realmstatustype)
+                    {
+                        if (realmstatustype == "UP")
+                        {
+                            // Console.WriteLine($"Work this realm : {realmname}");
+                            return "Work";
+                        }
+                        else
+                        {
+                            // Console.WriteLine($"No work this realm : {realmname}");
+                            return "No work";
+                        }
+
+                    }
+                    else
+                    {
+                        if (realmstatustype == "UP")
+                        {
+                            Console.WriteLine($"Up this realm : {realmname}");
+                            return "Up";
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Down work this realm : {realmname}");
+                            return "Down";
+                        }
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return "Error";
+            }
+
+        }
+        private static async void WriteRealmStatusTypeInFile(string text)
+        {
+            string writePathtext = @"F:\TelegramWowBot\RealmStatusType.txt";
+
+
+
+
+
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(writePathtext, false, System.Text.Encoding.Default))
+                {
+                    await sw.WriteAsync(text);
+                }
+
+
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
     }
     #region RealmInfo Classes

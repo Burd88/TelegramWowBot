@@ -9,34 +9,40 @@ namespace TelegramBot
     class CharInfo
     {
         private static string nameChar = "";
-        private static string itemLVL = "Илвл: ";
-        private static string classString = "Класс: нет";
-        private static string spec = "Спек: нет";
-        private static string coven = "Ковен: нет";
-
-        private static string coven_soul = "Медиум: нет";
-        private static string last_login = "Вход в игру: хз";
-        private static string guild = "Гильдия: нет";
-        private static string raid_progress = "Рейд: 0/0";
-        private static string mythic_score = "Мифик: 0.0";
+        private static string itemLVL = "<b>Илвл</b>: ";
+        private static string classString = "<b>Класс</b>: нет";
+        private static string spec = "<b>Спек</b>: нет";
+        private static string coven = "<b>Ковен</b>: нет";
+        private static string stats = "<b>Статы</b>: ";
+        private static string coven_soul = "<b>Медиум</b>: нет";
+        private static string last_login = "<b>Вход в игру</b>: хз";
+        private static string guild = "<b>Гильдия</b>: нет";
+        private static string raid_progress = "<b>Рейд</b>: 0/0";
+        private static string mythic_score = "<b>Мифик: 0.0</b>";
+        private static string image_char = "";
         private static string error = "false";
+        private static string link_bNet = "";
+        private static string linkForChar = "";
 
         public static string[] GetCharInfo(string name)
         {
             nameChar = "";
-            itemLVL = "Илвл: ";
-            classString = "Класс: нет";
-            spec = "Спек: нет";
-            coven = "Ковен: нет";
-            coven_soul = "Медиум: нет";
-            last_login = "Вход в игру: хз";
-            guild = "Гильдия: нет";
-            raid_progress = "Рейд: 0/0";
-            mythic_score = "Мифик: 0.0";
+            itemLVL = "<b>Илвл</b>: ";
+            classString = "<b>Класс</b>: нет";
+            spec = "<b>Спек</b>: нет";
+            coven = "<b>Ковен</b>: нет";
+            stats = "<b>Статы</b>: ";
+            coven_soul = "<b>Медиум</b>: нет";
+            last_login = "<b>Вход в игру</b>: хз";
+            guild = "<b>Гильдия</b>: нет";
+            raid_progress = "<b>Рейд</b>: 0/0";
+            mythic_score = "<b>Мифик: 0.0</b>";
+            image_char = "";
             error = "false";
+            link_bNet = "";
+            GetLinkForChar(name);
 
-            Character_info(name);
-            string[] charfull = new string[11];
+            string[] charfull = new string[14];
             charfull[0] = nameChar;
             charfull[1] = guild;
             charfull[2] = itemLVL;
@@ -48,14 +54,45 @@ namespace TelegramBot
             charfull[8] = mythic_score;
             charfull[9] = last_login;
             charfull[10] = error;
+            charfull[11] = image_char;
+            charfull[12] = stats;
+            charfull[13] = link_bNet;
             return charfull;
+        }
+        private static string name = "";
+        private static string realm = "";
+        private static void GetLinkForChar(string text)
+        {
+            if (text.Contains("-"))
+            {
+                string[] str = text.Split("-");
+                foreach (RealmList rlm in Functions.Realms)
+                {
+                    if (rlm.Name.ToLower() == str[1].ToLower())
+                    {
+                        realm = rlm.Slug;
+                        Character_info(str[0]);
+
+
+                    }
+                }
+
+            }
+            else
+            {
+                realm = "howling-fjord";
+                Character_info(text);
+
+
+            }
         }
         private static void Character_info(string name)
         {
 
             try
             {
-                WebRequest requestchar = WebRequest.Create("https://eu.api.blizzard.com/profile/wow/character/howling-fjord/" + name.ToLower() + "?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
+                Console.WriteLine("https://eu.api.blizzard.com/profile/wow/character/" + realm + "/" + name.ToLower() + "?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
+                WebRequest requestchar = WebRequest.Create("https://eu.api.blizzard.com/profile/wow/character/" + realm + "/" + name.ToLower() + "?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
 
                 WebResponse responcechar = requestchar.GetResponse();
 
@@ -72,37 +109,38 @@ namespace TelegramBot
 
                             if (character.equipped_item_level.ToString() == "error")
                             {
-                                itemLVL = "Илвл: 0";
+                                itemLVL = "<b>Илвл</b>: 0";
                             }
                             else
                             {
-                                itemLVL = "Илвл: " + character.equipped_item_level.ToString();
+                                itemLVL = "<b>Илвл</b>: " + character.equipped_item_level.ToString();
                             }
-                            nameChar = character.name;
+                            nameChar = "<b>" + character.name + "</b>";
                             if (character.active_spec != null)
                             {
-                                spec = "Спек: " + character.active_spec.name;
+                                spec = "<b>Спек</b>: " + character.active_spec.name;
 
                             }
                             if (character.character_class != null)
                             {
-                                classString = "Класс: " + character.character_class.name;
+                                classString = "<b>Класс</b>: " + character.character_class.name;
                             }
                             if (character.guild != null)
                             {
-                                guild = "Гильдия: " + character.guild.name;
+                                guild = "<b>Гильдия</b>: " + character.guild.name;
                             }
 
 
-                            last_login = "Вход в игру: " + Functions.relative_time(Functions.FromUnixTimeStampToDateTime(character.last_login_timestamp.ToString()));
+                            last_login = "<b>Вход в игру</b>: " + Functions.relative_time(Functions.FromUnixTimeStampToDateTime(character.last_login_timestamp.ToString()));
                             if (line.Contains("\"covenant_progress\":"))
                             {
-                                coven = "Ковен: " + GetCoven(character.covenant_progress.chosen_covenant.id.ToString()) + " (" + character.covenant_progress.renown_level.ToString() + ")";
+                                coven = "<b>Ковен</b>: " + GetCoven(character.covenant_progress.chosen_covenant.id.ToString()) + " (" + character.covenant_progress.renown_level.ToString() + ")";
                             }
 
                             GetSoulbindsCharacter(character.name);
                             Character_raid_progress(character.name);
-
+                            GetCharMedia(character.name);
+                            GetCharStats(character.name);
                         }
                     }
                 }
@@ -151,7 +189,7 @@ namespace TelegramBot
 
             try
             {
-                WebRequest request = WebRequest.Create("https://eu.api.blizzard.com/profile/wow/character/howling-fjord/" + name.ToLower() + "/soulbinds?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
+                WebRequest request = WebRequest.Create("https://eu.api.blizzard.com/profile/wow/character/" + realm + "/" + name.ToLower() + "/soulbinds?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
                 WebResponse responce = request.GetResponse();
 
                 using (Stream stream = responce.GetResponseStream())
@@ -171,7 +209,7 @@ namespace TelegramBot
 
                                     if (soulbinds.is_active == true)
                                     {
-                                        coven_soul = "Медиум: " + soulbinds.soulbind.name;
+                                        coven_soul = "<b>Медиум</b>: " + soulbinds.soulbind.name;
 
 
 
@@ -211,7 +249,7 @@ namespace TelegramBot
 
             try
             {
-                WebRequest requestchar = WebRequest.Create("https://raider.io/api/v1/characters/profile?region=eu&realm=howling-fjord&name=" + name + "&fields=mythic_plus_scores%2Craid_progression");
+                WebRequest requestchar = WebRequest.Create("https://raider.io/api/v1/characters/profile?region=eu&realm=" + realm + "&name=" + name + "&fields=mythic_plus_scores%2Craid_progression");
 
                 WebResponse responcechar = requestchar.GetResponse();
 
@@ -224,8 +262,8 @@ namespace TelegramBot
                         while ((line = reader1.ReadLine()) != null)
                         {
                             RaiderIO_info character = JsonConvert.DeserializeObject<RaiderIO_info>(line);
-                            raid_progress = "Рейд: " + character.raid_progression.CastleNathria.summary;
-                            mythic_score = "Мифик: " + character.mythic_plus_scores.all;
+                            raid_progress = "<b>Рейд</b>: " + character.raid_progression.CastleNathria.summary;
+                            mythic_score = "<b>Мифик</b>: " + character.mythic_plus_scores.all;
                         }
                     }
                 }
@@ -248,9 +286,380 @@ namespace TelegramBot
                 Console.WriteLine("CharInfo Error RaidProgress: " + e.Message);
             }
         }
+        private static void GetCharMedia(string name)
+        {
 
 
+            try
+            {
+                WebRequest request = WebRequest.Create("https://eu.api.blizzard.com/profile/wow/character/" + realm + "/" + name.ToLower() + "/character-media?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
+                WebResponse responce = request.GetResponse();
+
+                using (Stream stream = responce.GetResponseStream())
+
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        string line = "";
+                        while ((line = reader.ReadLine()) != null)
+                        {
+
+
+                            CharMedia charMedia = JsonConvert.DeserializeObject<CharMedia>(line);
+
+
+                            foreach (AssetCM media in charMedia.assets)
+                            {
+                                if (media.key == "inset")
+                                {
+
+                                    image_char = media.value;
+                                    string lnk = "https://worldofwarcraft.com/ru-ru/character/eu/howling-fjord/" + name.ToLower();
+                                    link_bNet = $"<a href=\"{lnk}\">Просмотр на офф сайте</a>";
+
+                                }
+                            }
+
+
+
+
+                        }
+                    }
+                }
+                responce.Close();
+                error = "false";
+            }
+            catch (WebException e)
+            {
+                if (e.Status == WebExceptionStatus.ProtocolError)
+                {
+                    Console.WriteLine("Status Code : {0}", ((HttpWebResponse)e.Response).StatusCode);
+                    Console.WriteLine("Status Description : {0}", ((HttpWebResponse)e.Response).StatusDescription);
+                    Console.WriteLine("CharInfo Error Media: " + e.Message);
+                    error = "true";
+                }
+            }
+            catch (Exception e)
+            {
+                error = "true";
+                Console.WriteLine("CharInfo Error Media: " + e.Message);
+            }
+
+
+        }
+        private static void GetCharStats(string name)
+        {
+
+
+            try
+            {
+                WebRequest request = WebRequest.Create("https://eu.api.blizzard.com/profile/wow/character/" + realm + "/" + name.ToLower() + "/statistics?namespace=profile-eu&locale=ru_RU&access_token=" + Program.tokenWow);
+                WebResponse responce = request.GetResponse();
+
+                using (Stream stream = responce.GetResponseStream())
+
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        string line = "";
+                        while ((line = reader.ReadLine()) != null)
+                        {
+
+
+                            CharStats charStats = JsonConvert.DeserializeObject<CharStats>(line);
+                            double crit = charStats.melee_crit.value;
+                            crit = Math.Round(crit, 1);
+                            double haste = charStats.melee_haste.value;
+                            haste = Math.Round(haste, 1);
+                            double mastery = charStats.mastery.value;
+                            mastery = Math.Round(mastery, 1);
+                            double versality_damage = charStats.versatility_damage_done_bonus;
+                            versality_damage = Math.Round(versality_damage, 1);
+                            double versality_healing = charStats.versatility_damage_taken_bonus;
+                            versality_healing = Math.Round(versality_healing, 1);
+                            stats = stats + "\n" + "  <b>Критический удар</b>:  " + crit.ToString() + "%\n  <b>Скорость</b>:  " + haste.ToString() + "%\n"
+                                + "  <b>Искусность</b>:  " + mastery.ToString() + "%\n  <b>Универсальность</b>:  " + versality_damage.ToString() + "% / " + versality_healing.ToString() + "%";
+
+
+
+
+
+                        }
+                    }
+                }
+                responce.Close();
+                error = "false";
+            }
+            catch (WebException e)
+            {
+                if (e.Status == WebExceptionStatus.ProtocolError)
+                {
+                    Console.WriteLine("Status Code : {0}", ((HttpWebResponse)e.Response).StatusCode);
+                    Console.WriteLine("Status Description : {0}", ((HttpWebResponse)e.Response).StatusDescription);
+                    Console.WriteLine("CharInfo Error Stats: " + e.Message);
+                    error = "true";
+                }
+            }
+            catch (Exception e)
+            {
+                error = "true";
+                Console.WriteLine("CharInfo Error Stats: " + e.Message);
+            }
+
+
+        }
     }
+    #region Char Stats
+    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse); 
+    public class Self
+    {
+        public string href { get; set; }
+    }
+
+    public class Links
+    {
+        public Self self { get; set; }
+    }
+
+    public class Key
+    {
+        public string href { get; set; }
+    }
+
+    public class PowerType
+    {
+        public Key key { get; set; }
+        public string name { get; set; }
+        public int id { get; set; }
+    }
+
+    public class Speed
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+    }
+
+    public class Strength
+    {
+        public int @base { get; set; }
+        public int effective { get; set; }
+    }
+
+    public class Agility
+    {
+        public int @base { get; set; }
+        public int effective { get; set; }
+    }
+
+    public class Intellect
+    {
+        public int @base { get; set; }
+        public int effective { get; set; }
+    }
+
+    public class Stamina
+    {
+        public int @base { get; set; }
+        public int effective { get; set; }
+    }
+
+    public class MeleeCrit
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class MeleeHaste
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class Mastery
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class Lifesteal
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class Avoidance
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+    }
+
+    public class SpellCrit
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class Armor
+    {
+        public int @base { get; set; }
+        public int effective { get; set; }
+    }
+
+    public class Dodge
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class Parry
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class Block
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class RangedCrit
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class RangedHaste
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class SpellHaste
+    {
+        public double rating { get; set; }
+        public double rating_bonus { get; set; }
+        public double value { get; set; }
+    }
+
+    public class Realm
+    {
+        public Key key { get; set; }
+        public string name { get; set; }
+        public int id { get; set; }
+        public string slug { get; set; }
+    }
+
+    public class Character
+    {
+        public Key key { get; set; }
+        public string name { get; set; }
+        public int id { get; set; }
+        public Realm realm { get; set; }
+    }
+
+    public class CharStats
+    {
+        public Links _links { get; set; }
+        public double health { get; set; }
+        public double power { get; set; }
+        public PowerType power_type { get; set; }
+        public Speed speed { get; set; }
+        public Strength strength { get; set; }
+        public Agility agility { get; set; }
+        public Intellect intellect { get; set; }
+        public Stamina stamina { get; set; }
+        public MeleeCrit melee_crit { get; set; }
+        public MeleeHaste melee_haste { get; set; }
+        public Mastery mastery { get; set; }
+        public double bonus_armor { get; set; }
+        public Lifesteal lifesteal { get; set; }
+        public double versatility { get; set; }
+        public double versatility_damage_done_bonus { get; set; }
+        public double versatility_healing_done_bonus { get; set; }
+        public double versatility_damage_taken_bonus { get; set; }
+        public Avoidance avoidance { get; set; }
+        public double attack_power { get; set; }
+        public double main_hand_damage_min { get; set; }
+        public double main_hand_damage_max { get; set; }
+        public double main_hand_speed { get; set; }
+        public double main_hand_dps { get; set; }
+        public double off_hand_damage_min { get; set; }
+        public double off_hand_damage_max { get; set; }
+        public double off_hand_speed { get; set; }
+        public double off_hand_dps { get; set; }
+        public double spell_power { get; set; }
+        public double spell_penetration { get; set; }
+        public SpellCrit spell_crit { get; set; }
+        public double mana_regen { get; set; }
+        public double mana_regen_combat { get; set; }
+        public Armor armor { get; set; }
+        public Dodge dodge { get; set; }
+        public Parry parry { get; set; }
+        public Block block { get; set; }
+        public RangedCrit ranged_crit { get; set; }
+        public RangedHaste ranged_haste { get; set; }
+        public SpellHaste spell_haste { get; set; }
+        public Character character { get; set; }
+    }
+
+
+    #endregion
+    #region Char Media
+    public class SelfCM
+    {
+        public string href { get; set; }
+    }
+
+    public class LinksCM
+    {
+        public SelfCM self { get; set; }
+    }
+
+    public class KeyCM
+    {
+        public string href { get; set; }
+    }
+
+    public class RealmCM
+    {
+        public KeyCM key { get; set; }
+        public string name { get; set; }
+        public int id { get; set; }
+        public string slug { get; set; }
+    }
+
+    public class CharacterCM
+    {
+        public KeyCM key { get; set; }
+        public string name { get; set; }
+        public int id { get; set; }
+        public RealmCM realm { get; set; }
+    }
+
+    public class AssetCM
+    {
+        public string key { get; set; }
+        public string value { get; set; }
+    }
+
+    public class CharMedia
+    {
+        public LinksCM _links { get; set; }
+        public CharacterCM character { get; set; }
+        public List<AssetCM> assets { get; set; }
+    }
+    #endregion
     #region SoulBindClass
     public class SelfSoulbinds
     {
